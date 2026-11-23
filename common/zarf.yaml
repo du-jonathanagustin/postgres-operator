@@ -69,7 +69,7 @@ components:
             cmd: |
               if ./zarf tools kubectl get namespace postgres 2>/dev/null; then
                 if ./zarf tools kubectl get packages.uds.dev postgres -n postgres; then
-                  ./zarf tools wait-for packages.uds.dev postgres -n postgres '{.status.phase}'=Ready
+                  ./zarf tools kubectl -n postgres wait packages.uds.dev/postgres --for='jsonpath={.status.phase}=Ready' --timeout=280s
                 fi
               fi
           - description: Postgres Operator to be Healthy
@@ -85,6 +85,6 @@ components:
             cmd: |
               if ./zarf tools kubectl get namespace postgres 2>/dev/null; then
                 if ./zarf tools kubectl get postgresql pg-cluster -n postgres; then
-                  ./zarf tools wait-for postgresql pg-cluster -n postgres '{.status.PostgresClusterStatus}'=Running
+                  ./zarf tools kubectl -n postgres wait postgresql/pg-cluster --for='jsonpath={.status.PostgresClusterStatus}=Running' --timeout=280s
                 fi
               fi
