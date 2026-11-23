@@ -1,7 +1,7 @@
 # Copyright 2024 Defense Unicorns
 # SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Defense-Unicorns-Commercial
 
-# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/zarf/main/zarf.schema.json
+apiVersion: zarf.dev/v1beta1
 kind: ZarfPackageConfig
 metadata:
   name: postgres-test
@@ -10,14 +10,13 @@ metadata:
 
 components:
   - name: test-cross-namespace-chart-deployed-postgres
-    required: true
     manifests:
       - name: db-seed
         files:
           - postgres/uds-package-cross-namespace.yaml
           - postgres/db-seed-cross-namespace.yaml
     images:
-      - docker.io/postgres:18
+      - name: docker.io/postgres:18
     actions:
       onDeploy:
         before:
@@ -28,7 +27,7 @@ components:
                 namespace: postgres
                 condition: "'{.status.PostgresClusterStatus}'=Running"
             maxTotalSeconds: 600
-        after:
+        onSuccess:
           - wait:
               cluster:
                 kind: Job
@@ -37,16 +36,15 @@ components:
                 condition: "'{.status.succeeded}'=1"
 
   - name: test-bad-password
-    required: true
     manifests:
       - name: bad-password-test
         files:
           - postgres/bad-password-test.yaml
     images:
-      - docker.io/postgres:18
+      - name: docker.io/postgres:18
     actions:
       onDeploy:
-        after:
+        onSuccess:
           - wait:
               cluster:
                 kind: Job
@@ -55,7 +53,6 @@ components:
                 condition: "'{.status.succeeded}'=1"
 
   - name: deploy-postgres-standalone
-    required: true
     manifests:
       - name: postgres
         files:
@@ -63,7 +60,7 @@ components:
           - postgres/postgres-minimal.yaml
     actions:
       onDeploy:
-        after:
+        onSuccess:
           - wait:
               cluster:
                 kind: Postgresql
@@ -73,16 +70,15 @@ components:
             maxTotalSeconds: 600
 
   - name: test-standalone-postgres-deployment
-    required: true
     manifests:
       - name: db-seed
         files:
           - postgres/db-seed.yaml
     images:
-      - docker.io/postgres:18
+      - name: docker.io/postgres:18
     actions:
       onDeploy:
-        after:
+        onSuccess:
           - wait:
               cluster:
                 kind: Job
