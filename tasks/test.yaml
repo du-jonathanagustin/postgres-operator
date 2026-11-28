@@ -6,6 +6,7 @@ tasks:
     actions:
       - task: health-check
       - task: create-dbs
+      - task: verify-standalone-data
 
   - name: create-dbs
     actions:
@@ -23,3 +24,15 @@ tasks:
             name: app.kubernetes.io/name=postgres-operator
             namespace: postgres-operator
             condition: Ready
+
+  - name: verify-standalone-data
+    description: Read the original seeded row without reseeding so the check detects data loss after a lifecycle change.
+    actions:
+      - description: Read the witness from the standalone test database using its fixture role.
+        maxRetries: 5
+        cmd: |
+          count=$(uds zarf tools kubectl -n acid exec statefulset/pg-cluster -c postgres -- \
+            env -u PGHOST -u PGHOSTADDR PGOPTIONS="-c default_transaction_read_only=on" \
+            psql -X -w -qAt --set=ON_ERROR_STOP=1 --username=myuser --dbname=mydb \
+            -c "SELECT count(*) FROM public.tasks WHERE id = -1 AND name = 'uds-qualification-witness';") || exit 1
+          test "$count" = 1

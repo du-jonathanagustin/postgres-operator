@@ -8,11 +8,14 @@ metadata:
   namespace: acid
 data:
   seed.sql: |
-    CREATE TABLE tasks (
+    CREATE TABLE IF NOT EXISTS public.tasks (
         id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
         description TEXT
     );
+    INSERT INTO public.tasks (id, name)
+    VALUES (-1, 'uds-qualification-witness')
+    ON CONFLICT (id) DO NOTHING;
 ---
 apiVersion: batch/v1
 kind: Job
@@ -30,7 +33,7 @@ spec:
           command:
             - sh
             - -c
-            - psql -h $DB_HOST -U $DB_USER -d $DB_NAME -a -f /seed.sql
+            - psql -X -w --set=ON_ERROR_STOP=1 --single-transaction -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f /seed.sql
           env:
             - name: DB_USER
               valueFrom:
