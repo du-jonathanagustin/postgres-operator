@@ -27,10 +27,8 @@ components:
     required: true
     manifests:
       - name: crds
-        files:
-          - https://github.com/zalando/postgres-operator/raw/v2.0.3/charts/postgres-operator/crds/operatorconfigurations.yaml
-          - https://github.com/zalando/postgres-operator/raw/v2.0.3/charts/postgres-operator/crds/postgresqls.yaml
-          - https://github.com/zalando/postgres-operator/raw/v2.0.3/charts/postgres-operator/crds/postgresteams.yaml
+        kustomizations:
+          - crds
         serverSideApply: "false"
     actions:
       onDeploy:

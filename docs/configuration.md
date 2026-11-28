@@ -8,6 +8,7 @@ Postgres Operator is configured through the upstream [Zalando Postgres Operator 
 - [Test Bundle Configuration](#test-bundle-configuration)
 - [Networking](#networking)
 - [Postgres Clusters](#postgres-clusters)
+- [Data retention during removal](#data-retention-during-removal)
 - [Secrets Creation](#secrets-creation)
 - [Postgres HugePages](#postgres-hugepages)
 - [Postgres Extensions](#postgres-extensions)
@@ -58,7 +59,7 @@ Network policies are controlled via the `uds-postgres-config` chart and follow [
 
 ## Postgres Clusters
 
-Postgres Operator is configured through [`acid.zalan.do/v1` `Postgresql` custom resources](https://github.com/zalando/postgres-operator/blob/master/docs/reference/cluster_manifest.md#cluster-manifest-reference).  The `uds-postgres-config` chart creates one of these by default which is configurable through the following:
+Postgres Operator is configured through [`acid.zalan.do/v1` `Postgresql` custom resources](https://github.com/zalando/postgres-operator/blob/master/docs/reference/cluster_manifest.md#cluster-manifest-reference).  The `uds-postgres-config` chart can create a cluster when `postgresql.enabled` is set to `true`. Configure that cluster with the following values:
 
 - `postgresql.enabled`: whether to create the default `Postgresql` custom resource (if disabled you will need to apply your own CRs to the cluster)
 - `postgresql.teamId`: the name of the team the cluster belongs to (i.e. `uds`)
@@ -84,6 +85,12 @@ Postgres Operator is configured through [`acid.zalan.do/v1` `Postgresql` custom 
     - name: <name>
       value: <value>
 ```
+
+## Data retention during removal
+
+The package marks its PostgreSQL custom resource definitions for Helm retention so removing the operator preserves the API definitions and custom resources managed outside the package.
+
+When you enable `postgresql.enabled`, the package's configuration chart owns the `pg-cluster` custom resource. Back up that database before package removal because Helm can remove the custom resource and its dependent workloads.
 
 ## Secrets Creation
 
